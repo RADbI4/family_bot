@@ -4,6 +4,8 @@ import os
 import json
 from .fam_bot_consts import work_days_callback_map
 from .work_d_out_publisher import publish_to_work_days
+from .g_cloud_publisher import publish_g_cloud_in
+from base64 import b64encode
 
 bot = telebot.TeleBot(os.environ.get('telegram_bot_1'))
 
@@ -13,6 +15,39 @@ def get_start_msgs(message):
     bot.send_message(message.chat.id, text="Меня зовут radmir_family_bot, я помошник вашей семьи.\n"
                                            "Наберите /help, чтобы узнать о моих возможностях.")
 
+
+# @bot.message_handler(content_types=['document'])
+@bot.message_handler(commands=['files'])
+def files_call(message):
+    """
+    Транспорт файлов на загрузку в google cloud.
+    :param message:
+    :return:
+    """
+    text = 'Хотите загрузить файлы на гугл диск?'
+    keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+    keyboard.add(types.KeyboardButton(text="Да"))
+    keyboard.add(types.KeyboardButton(text="Нет"))
+    bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+    bot.register_next_step_handler(message, files_callback)
+
+def files_callback(message):
+    text = 'Загрузите файл в формате zip'
+    bot.send_message(message.chat.id, text=text)
+    bot.register_next_step_handler(message, google_cloud_callback)
+
+def google_cloud_callback(message):
+    text = 'Ваши фотки грузятся на гугл диск!\n' \
+           'Пока в тестовом режиме на тестовый аккаунт!'
+    bot.send_message(message.chat.id, text=text)
+    file_name = message.document.file_name
+    file_id_info = bot.get_file(message.document.file_id)
+    downloaded_file = bot.download_file(file_id_info.file_path)
+    file_to_floader = b64encode(downloaded_file).decode('utf-8')
+    data = {'f_data': file_to_floader}
+    data['f_name'] = file_name
+    rabbitMQ_body = json.dumps(data)
+    publish_g_cloud_in(data=rabbitMQ_body)
 
 @bot.message_handler(commands=['help'])
 def get_help_msgs(message):
