@@ -12,3 +12,4 @@ def publish_g_cloud_in(data):
     :return:
     """
     channel.basic_publish(exchange='', routing_key='g_cloud_in', body=data)
+
