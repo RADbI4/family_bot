@@ -25,7 +25,7 @@ def files_call(message):
     :return:
     """
     text = 'Хотите загрузить файлы на гугл диск?'
-    keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+    keyboard = types.ReplyKeyboardMarkup()
     keyboard.add(types.KeyboardButton(text="Да"))
     keyboard.add(types.KeyboardButton(text="Нет"))
     bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
@@ -33,13 +33,13 @@ def files_call(message):
 
 def files_callback(message):
     text = 'Загрузите файл в формате zip'
-    bot.send_message(message.chat.id, text=text)
+    bot.send_message(message.chat.id, text=text, reply_markup=types.ReplyKeyboardRemove())
     bot.register_next_step_handler(message, google_cloud_callback)
 
 def google_cloud_callback(message):
     text = 'Ваши фотки грузятся на гугл диск!\n' \
            'Пока в тестовом режиме на тестовый аккаунт!'
-    bot.send_message(message.chat.id, text=text)
+    bot.send_message(message.chat.id, text=text, reply_markup=types.ReplyKeyboardRemove())
     file_name = message.document.file_name
     file_id_info = bot.get_file(message.document.file_id)
     downloaded_file = bot.download_file(file_id_info.file_path)
@@ -51,9 +51,11 @@ def google_cloud_callback(message):
 
 @bot.message_handler(commands=['help'])
 def get_help_msgs(message):
-    bot.send_message(message.chat.id, text="Я могу сделать для вас следующее\n"
+    bot.send_message(message.chat.id, text="Я могу сделать для вас следующее:\n"
                                            "1. Чтобы узнать, когда у Радмира выходной, напишите- /work \n"
-                                           "2. В планах: Сохранение изображений и видео в семейный архив на облаке.\n")
+                                           "2. Чтобы сохранить ваши фото на гугл/диск Камиллы и радмира\n"
+                                           "нажмите /files\n"
+                                           "3. В планах перенести загрузку на основой гугл облака.")
 
 
 @bot.message_handler(commands=['work'])
