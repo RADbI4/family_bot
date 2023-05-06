@@ -3,9 +3,10 @@ from telebot import types
 import os
 import json
 from .fam_bot_consts import work_days_callback_map
-from .work_d_out_publisher import publish_to_work_days
-from .g_cloud_publisher import publish_g_cloud_in
+# from .work_d_out_publisher import publish_to_work_days
+# from .g_cloud_publisher import publish_g_cloud_in
 from base64 import b64encode
+from .publishers import google_drive_in_publish, calendar_in_publish
 
 bot = telebot.TeleBot(os.environ.get('telegram_bot_1'))
 
@@ -31,10 +32,12 @@ def files_call(message):
     bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
     bot.register_next_step_handler(message, files_callback)
 
+
 def files_callback(message):
     text = 'Загрузите файл в формате zip'
     bot.send_message(message.chat.id, text=text, reply_markup=types.ReplyKeyboardRemove())
     bot.register_next_step_handler(message, google_cloud_callback)
+
 
 def google_cloud_callback(message):
     text = 'Ваши фотки грузятся на гугл диск!\n' \
@@ -47,7 +50,9 @@ def google_cloud_callback(message):
     data = {'f_data': file_to_floader}
     data['f_name'] = file_name
     rabbitMQ_body = json.dumps(data)
-    publish_g_cloud_in(data=rabbitMQ_body)
+    # publish_g_cloud_in(data=rabbitMQ_body)
+    google_drive_in_publish(msg=rabbitMQ_body)
+
 
 @bot.message_handler(commands=['help'])
 def get_help_msgs(message):
@@ -85,11 +90,12 @@ def callback_worker(call):
         'date': data_for_work_days_returns,
         'chat_id': call.message.chat.id}
     rabbitMQ_body = json.dumps(date_to_calculate_work_days)
-    publish_to_work_days(rabbitMQ_body)
+    calendar_in_publish(msg=rabbitMQ_body)
+    # publish_to_work_days(rabbitMQ_body)
     bot.send_message(call.message.chat.id, text='Скоро будет загружен календарь\n'
                                                 'рабочих дней Радмира!')
 
 
 if __name__ == "__main__":
-    bot.polling(none_stop=True, interval=1)
+    # bot.polling(none_stop=True, interval=1)
     pass
