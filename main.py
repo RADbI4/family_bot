@@ -1,8 +1,9 @@
-from src.bot_obj import bot
+from src.aio_bot import dp
+from aiogram.utils import executor
 
 
 def main():
-    bot.polling(none_stop=True, interval=1)
+    executor.start_polling(dp)
 
 
 if __name__ == "__main__":
