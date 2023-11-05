@@ -6,6 +6,4 @@ class ClaendarStates(StatesGroup):
 
 
 class YaDriveStates(StatesGroup):
-    arhcieve_dir = State()
-    req_for_files = State()
     wait_for_files = State()
