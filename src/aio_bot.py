@@ -30,20 +30,28 @@ async def files_call(message):
     await YaDriveStates.wait_for_files.set()
     await family_bot.send_message(message.chat.id, text=text)
 
-
-@dp.message_handler(content_types=['photo', 'video'], state=YaDriveStates.wait_for_files)
+@dp.message_handler(content_types=['video'], state=YaDriveStates.wait_for_files)
 async def files_callback(message, state: FSMContext):
     text = f'Файлы загружаются на Яндекс диск'
-    file_name = message.photo[-1].file_unique_id
-    file_id_info = await family_bot.get_file(message.photo[-1].file_id)
-    downloaded_file = await family_bot.download_file(file_path=file_id_info.file_path)
-    file_to_floader = b64encode(downloaded_file.getvalue()).decode('utf-8')
-    data = {'f_data': file_to_floader,
-            'f_name': file_name + '.jpg',
-            'action': 'load_files',
-            'folder_name': datetime.datetime.date(datetime.datetime.today()).strftime('%d-%m-%y')}
-    rabbitMQ_body = json.dumps(data)
-    yandex_drive_publish(msg=rabbitMQ_body)
+    # file_name = message.photo[-1].file_unique_id
+    id =message.message_id
+    pass
+
+@dp.message_handler(content_types=['photo'], state=YaDriveStates.wait_for_files)
+async def files_callback(message, state: FSMContext):
+    text = f'Файлы загружаются на Яндекс диск'
+    # file_name = message.photo[-1].file_unique_id
+    id =message.message_id
+    pass
+    # file_id_info = await family_bot.get_file(message.photo[-1].file_id)
+    # downloaded_file = await family_bot.download_file(file_path=file_id_info.file_path)
+    # file_to_floader = b64encode(downloaded_file.getvalue()).decode('utf-8')
+    # data = {'f_data': file_to_floader,
+            # 'f_name': file_name + '.jpg',
+            # 'action': 'load_files',
+            # 'folder_name': datetime.datetime.date(datetime.datetime.today()).strftime('%d-%m-%y')}
+    # rabbitMQ_body = json.dumps(data)
+    # yandex_drive_publish(msg=rabbitMQ_body)
 
     await family_bot.send_message(message.chat.id, text=text, reply_markup=types.ReplyKeyboardRemove())
     await state.finish()
